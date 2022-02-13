@@ -1,16 +1,20 @@
-# This is a sample Python script.
+import os
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import discord
+from discord.ext import commands
+from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_commands import create_choice, create_option
 
+client = commands.Bot(command_prefix="/")
+slash = SlashCommand(client, sync_commands=True)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@client.event
+async def on_ready():
+    print(f"{client.user} is initiated!")
 
+@slash.slash(name="hello",
+             description="Sends Hello message!")
+async def _hello(ctx:SlashContext):
+    await ctx.send("Hello!")
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+client.run(os.getenv("TOKEN"))
