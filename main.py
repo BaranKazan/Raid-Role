@@ -1,6 +1,7 @@
 import interactions
 import config
 import requests
+import urllib.parse
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
 
@@ -23,12 +24,12 @@ async def get_role(ctx: interactions.CommandContext, username: str):
 
 
 async def get_bungie_id(username):
-    url = f"https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/-1/{username}/"
+    url = f"https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/-1/{urllib.parse.quote(username)}/"
     payload = {}
     headers = {
-        "x-api-key":config.BUNGIE_TOKEN
+        "x-api-key":config.BUNGIE_TOKEN,
     }
-    response = requests.request(method="GET", url=url, headers=headers, data=payload)
+    response = requests.request("GET", url, headers=headers, data=payload)
     print(response.content)
 
 
