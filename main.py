@@ -3,7 +3,7 @@ import config
 import requests
 import urllib.parse
 
-from InvalidUser import InvalidUser
+from Exceptions import InvalidUser, APIException
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
 
@@ -23,10 +23,11 @@ bot = interactions.Client(token=config.DISCORD_TOKEN)
 async def get_role(ctx: interactions.CommandContext, username: str):
     try:
         destiny_membership_id = await get_bungie_id(username)
-    except InvalidUser as e:
+        raid_clears = await get_raid_clears(destiny_membership_id)
+        await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
+    except (InvalidUser, APIException) as e:
         await ctx.send(e.args[0])
-    raid_clears = await get_raid_clears(destiny_membership_id)
-    await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
+
 
 
 async def get_bungie_id(username):
@@ -34,10 +35,13 @@ async def get_bungie_id(username):
     headers = {
         "x-api-key":config.BUNGIE_TOKEN,
     }
+
     response = requests.request(method="GET", url=url, headers=headers)
+    if response.status_code != 200:
+        raise APIException("Something is wrong with API, Bungie servers might be down.")
     response_json = response.json()["Response"]
     if not response_json:
-        raise InvalidUser("The user does not exist")
+        raise InvalidUser("The user does not exist.")
 
     user_data = None
     for x in response_json:
@@ -55,7 +59,10 @@ async def get_raid_clears(membership_id):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
     }
+
     response = requests.request(method="GET", url=url, headers=headers)
+    if response.status_code != 200:
+        raise APIException("The API is down, contact the Developer!")
     activities = response.json()["response"]["activities"]
 
     total_clears = 0
