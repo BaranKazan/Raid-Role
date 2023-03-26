@@ -3,6 +3,8 @@ import config
 import requests
 import urllib.parse
 
+from InvalidUser import InvalidUser
+
 bot = interactions.Client(token=config.DISCORD_TOKEN)
 
 @bot.command(
@@ -19,7 +21,10 @@ bot = interactions.Client(token=config.DISCORD_TOKEN)
     ],
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
-    destiny_membership_id = await get_bungie_id(username)
+    try:
+        destiny_membership_id = await get_bungie_id(username)
+    except InvalidUser as e:
+        await ctx.send(e.args[0])
     raid_clears = await get_raid_clears(destiny_membership_id)
     await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
 
@@ -31,6 +36,8 @@ async def get_bungie_id(username):
     }
     response = requests.request(method="GET", url=url, headers=headers)
     response_json = response.json()["Response"]
+    if not response_json:
+        raise InvalidUser("The user does not exist")
 
     user_data = None
     for x in response_json:
@@ -51,7 +58,7 @@ async def get_raid_clears(membership_id):
     response = requests.request(method="GET", url=url, headers=headers)
     activities = response.json()["response"]["activities"]
 
-    total_clears = 0000000000000000000000000000000000000
+    total_clears = 0
     for activity in activities:
         total_clears += activity["values"]["clears"]
 
