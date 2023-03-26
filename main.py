@@ -19,17 +19,17 @@ bot = interactions.Client(token=config.DISCORD_TOKEN)
     ],
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
-    await ctx.send(username)
     destiny_membership_id = await get_bungie_id(username)
+    raid_clears = await get_raid_clears(destiny_membership_id)
+    await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
 
 
 async def get_bungie_id(username):
     url = f"https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/-1/{urllib.parse.quote(username)}/"
-    payload = {}
     headers = {
         "x-api-key":config.BUNGIE_TOKEN,
     }
-    response = requests.request("GET", url, headers=headers, data=payload)
+    response = requests.request(method="GET", url=url, headers=headers)
     response_json = response.json()["Response"]
 
     user_data = None
@@ -42,4 +42,20 @@ async def get_bungie_id(username):
 
     return(user_data["membershipId"])
 
-bot.start()
+async def get_raid_clears(membership_id):
+    url = f"https://api.raidreport.dev/raid/player/{membership_id}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+    }
+    response = requests.request(method="GET", url=url, headers=headers)
+    activities = response.json()["response"]["activities"]
+
+    total_clears = 0000000000000000000000000000000000000
+    for activity in activities:
+        total_clears += activity["values"]["clears"]
+
+    return total_clears
+
+if __name__ == "__main__":
+    bot.start()
