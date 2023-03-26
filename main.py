@@ -30,7 +30,16 @@ async def get_bungie_id(username):
         "x-api-key":config.BUNGIE_TOKEN,
     }
     response = requests.request("GET", url, headers=headers, data=payload)
-    print(response.content)
+    response_json = response.json()["Response"]
 
+    user_data = None
+    for x in response_json:
+        membership_type = x["membershipType"]
+        if membership_type == 3:
+            user_data = x
+            break
+        user_data = x
+
+    return(user_data["membershipId"])
 
 bot.start()
