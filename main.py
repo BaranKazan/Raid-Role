@@ -3,7 +3,7 @@ import config
 import requests
 import urllib.parse
 
-from Exceptions import InvalidUser, APIException
+from Exceptions import InvalidUser, APIException, RoleException
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
 roles_name = [
@@ -21,8 +21,7 @@ roles_name = [
 )
 async def create_role(ctx: interactions.CommandContext):
     guild = await ctx.get_guild()
-    role_exists = await check_if_role_exists(guild)
-    if role_exists:
+    if await check_if_role_exists(guild):
         await ctx.send("The roles already exists")
     else:
         await ctx.send("Creating the roles...")
@@ -42,11 +41,13 @@ async def create_role(ctx: interactions.CommandContext):
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
     try:
+        if await check_if_role_exists(await ctx.get_guild()) is False:
+            raise RoleException("The roles does not exist, create the roles by doing /create_role")
+
         destiny_membership_id = await get_bungie_id(username)
         raid_clears = await get_raid_clears(destiny_membership_id)
         await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
-
-    except (InvalidUser, APIException) as e:
+    except (InvalidUser, APIException, RoleException) as e:
         await ctx.send(e.args[0])
 
 

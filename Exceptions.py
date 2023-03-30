@@ -3,3 +3,6 @@ class InvalidUser(Exception):
 
 class APIException(Exception):
     pass
+
+class RoleException(Exception):
+    pass
