@@ -6,6 +6,26 @@ import urllib.parse
 from Exceptions import InvalidUser, APIException
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
+roles_name = [
+    "a",
+    "b",
+    "c",
+    "d"
+    "e"
+]
+
+@bot.command(
+    name="create_role",
+    description="Creates the Roles in the Discord Server",
+    scope=config.GUILD_ID,
+)
+async def create_role(ctx: interactions.CommandContext):
+    guild = await ctx.get_guild()
+    role_exists = await check_if_role_exists(guild)
+    if role_exists:
+        await ctx.send("The roles already exists")
+    else:
+        await ctx.send("Creating the roles...")
 
 @bot.command(
     name="get_role",
@@ -25,9 +45,9 @@ async def get_role(ctx: interactions.CommandContext, username: str):
         destiny_membership_id = await get_bungie_id(username)
         raid_clears = await get_raid_clears(destiny_membership_id)
         await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
+
     except (InvalidUser, APIException) as e:
         await ctx.send(e.args[0])
-
 
 
 async def get_bungie_id(username):
@@ -38,7 +58,7 @@ async def get_bungie_id(username):
 
     response = requests.request(method="GET", url=url, headers=headers)
     if response.status_code != 200:
-        raise APIException("Something is wrong with API, Bungie servers might be down.")
+        raise APIException("Something is wrong with Bungie API, servers might be down.")
     response_json = response.json()["Response"]
     if not response_json:
         raise InvalidUser("The user does not exist.")
@@ -68,8 +88,13 @@ async def get_raid_clears(membership_id):
     total_clears = 0
     for activity in activities:
         total_clears += activity["values"]["clears"]
-
     return total_clears
+
+async def check_if_role_exists(guild: interactions.Guild):
+    guild_roles = await guild.get_all_roles()
+    guild_role_names = [x.name for x in guild_roles]
+    return all(role in roles_name for role in guild_role_names)
+
 
 if __name__ == "__main__":
     bot.start()
