@@ -6,12 +6,11 @@ import urllib.parse
 from Exceptions import InvalidUser, APIException, RoleException
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
-roles_name = [
-    "a",
-    "b",
-    "c",
-    "d"
-    "e"
+role_names = [
+    "Raid Master",
+    "Raid Adept",
+    "Raid Expert",
+    "Raid Beginner"
 ]
 
 
@@ -21,12 +20,11 @@ roles_name = [
     scope=config.GUILD_ID,
 )
 async def create_role(ctx: interactions.CommandContext):
-    guild = await ctx.get_guild()
-    if await check_if_role_exists_in_guild(guild):
-        await ctx.send("The roles already exists")
+    if await check_if_role_exists_in_guild(await ctx.guild.get_all_roles()):
+        await ctx.send("One or more roles already exists")
     else:
-        for role in roles_name:
-            await guild.create_role(name=role)
+        for role in role_names:
+            await ctx.guild.create_role(name=role)
         await ctx.send("The role has been created")
 
 
@@ -45,12 +43,13 @@ async def create_role(ctx: interactions.CommandContext):
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
     try:
-        if await check_if_role_exists_in_guild(await ctx.get_guild()) is False:
+        if await check_if_role_exists_in_guild(await ctx.guild.get_all_roles()) is False:
             raise RoleException("The roles does not exist, create the roles by doing /create_role")
 
         destiny_membership_id = await get_bungie_id(username)
         raid_clears = await get_raid_clears(destiny_membership_id)
-        await ctx.send(f"Total amount of Raid Clears: {raid_clears}")
+        role = await give_role(ctx, raid_clears)
+        await ctx.send(f"Total amount of Raid Clears: {raid_clears}, that will be a {role.name} title")
     except (InvalidUser, APIException, RoleException) as e:
         await ctx.send(e.args[0])
 
@@ -76,7 +75,7 @@ async def get_bungie_id(username):
             break
         user_data = x
 
-    return (user_data["membershipId"])
+    return user_data["membershipId"]
 
 
 async def get_raid_clears(membership_id):
@@ -97,10 +96,39 @@ async def get_raid_clears(membership_id):
     return total_clears
 
 
-async def check_if_role_exists_in_guild(guild: interactions.Guild):
-    guild_roles = await guild.get_all_roles()
+async def check_if_role_exists_in_guild(guild_roles: list[interactions.Role]):
     guild_role_names = [x.name for x in guild_roles]
-    return all(role in roles_name for role in guild_role_names)
+    result = any(role in guild_role_names for role in role_names)
+    return result
+
+
+async def give_role(ctx: interactions.CommandContext, raid_clears: int):
+    guild_roles = await ctx.guild.get_all_roles()
+    matching_guild_role = [x for x in guild_roles if x.name in role_names]
+
+    for role in matching_guild_role:
+        await ctx.author.remove_role(role)
+
+    role = None
+    if raid_clears >= 100:
+        role = search_role(matching_guild_role, role_names[0])
+        await ctx.author.add_role(role)
+    elif raid_clears >= 25:
+        role = search_role(matching_guild_role, role_names[1])
+        await ctx.author.add_role(role)
+    elif raid_clears >= 10:
+        role = search_role(matching_guild_role, role_names[2])
+        await ctx.author.add_role(role)
+    elif raid_clears >= 1:
+        role = search_role(matching_guild_role, role_names[3])
+        await ctx.author.add_role(role)
+    else:
+        raise RoleException("The user has not completed any raid")
+    return role
+
+
+def search_role(roles: list[interactions.Role], name: str):
+    return next(x for x in roles if x.name == name)
 
 
 if __name__ == "__main__":
