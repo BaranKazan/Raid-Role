@@ -14,6 +14,7 @@ roles_name = [
     "e"
 ]
 
+
 @bot.command(
     name="create_role",
     description="Creates the Roles in the Discord Server",
@@ -21,10 +22,13 @@ roles_name = [
 )
 async def create_role(ctx: interactions.CommandContext):
     guild = await ctx.get_guild()
-    if await check_if_role_exists(guild):
+    if await check_if_role_exists_in_guild(guild):
         await ctx.send("The roles already exists")
     else:
-        await ctx.send("Creating the roles...")
+        for role in roles_name:
+            await guild.create_role(name=role)
+        await ctx.send("The role has been created")
+
 
 @bot.command(
     name="get_role",
@@ -41,7 +45,7 @@ async def create_role(ctx: interactions.CommandContext):
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
     try:
-        if await check_if_role_exists(await ctx.get_guild()) is False:
+        if await check_if_role_exists_in_guild(await ctx.get_guild()) is False:
             raise RoleException("The roles does not exist, create the roles by doing /create_role")
 
         destiny_membership_id = await get_bungie_id(username)
@@ -54,7 +58,7 @@ async def get_role(ctx: interactions.CommandContext, username: str):
 async def get_bungie_id(username):
     url = f"https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/-1/{urllib.parse.quote(username)}/"
     headers = {
-        "x-api-key":config.BUNGIE_TOKEN,
+        "x-api-key": config.BUNGIE_TOKEN,
     }
 
     response = requests.request(method="GET", url=url, headers=headers)
@@ -72,7 +76,8 @@ async def get_bungie_id(username):
             break
         user_data = x
 
-    return(user_data["membershipId"])
+    return (user_data["membershipId"])
+
 
 async def get_raid_clears(membership_id):
     url = f"https://api.raidreport.dev/raid/player/{membership_id}"
@@ -91,7 +96,8 @@ async def get_raid_clears(membership_id):
         total_clears += activity["values"]["clears"]
     return total_clears
 
-async def check_if_role_exists(guild: interactions.Guild):
+
+async def check_if_role_exists_in_guild(guild: interactions.Guild):
     guild_roles = await guild.get_all_roles()
     guild_role_names = [x.name for x in guild_roles]
     return all(role in roles_name for role in guild_role_names)
