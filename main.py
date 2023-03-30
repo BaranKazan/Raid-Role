@@ -49,7 +49,7 @@ async def get_role(ctx: interactions.CommandContext, username: str):
         destiny_membership_id = await get_bungie_id(username)
         raid_clears = await get_raid_clears(destiny_membership_id)
         role = await give_role(ctx, raid_clears)
-        await ctx.send(f"Total amount of Raid Clears: {raid_clears}, that will be a {role.name} title")
+        await ctx.send(f"Total amount of Raid Clears: {raid_clears} \nYou earned the title: {role.name}")
     except (InvalidUser, APIException, RoleException) as e:
         await ctx.send(e.args[0])
 
