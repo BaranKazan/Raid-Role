@@ -61,3 +61,4 @@ jobs:
           app-name: 'raid-role-bot'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_33A954462F364E2DA4E5AAB680B37015 }}
+          run: python main.py
