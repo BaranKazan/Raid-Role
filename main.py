@@ -42,6 +42,7 @@ async def create_role(ctx: interactions.CommandContext):
     ],
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
+    await ctx.defer()
     try:
         if await check_if_role_exists_in_guild(await ctx.guild.get_all_roles()) is False:
             raise RoleException("The roles does not exist, create the roles by doing /create_role")
