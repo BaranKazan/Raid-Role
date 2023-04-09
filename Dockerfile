@@ -1,3 +1,5 @@
+#Command to input enviorment file "docker run --name [container-name] --env-file [path-to-env-file] [image-name]"
+
 FROM python:3.10.11-slim
 LABEL authors="barankazan"
 
