@@ -18,12 +18,14 @@ role_names = [
     scope=config.GUILD_ID,
 )
 async def create_role(ctx: interactions.CommandContext):
+    print("Receiving create_role request")
     if await check_if_role_exists_in_guild(await ctx.guild.get_all_roles()):
         await ctx.send("One or more roles already exists")
     else:
         for role in role_names:
             await ctx.guild.create_role(name=role)
         await ctx.send("The role has been created")
+    print("Successful execution")
 
 
 @bot.command(
@@ -40,6 +42,7 @@ async def create_role(ctx: interactions.CommandContext):
     ],
 )
 async def get_role(ctx: interactions.CommandContext, username: str):
+    print("Receiving get_role request")
     await ctx.defer()
     try:
         if await check_if_role_exists_in_guild(await ctx.guild.get_all_roles()) is False:
@@ -49,6 +52,7 @@ async def get_role(ctx: interactions.CommandContext, username: str):
         raid_clears = await get_raid_clears(destiny_membership_id)
         role = await give_role(ctx, raid_clears)
         await ctx.send(f"Total amount of Raid Clears: {raid_clears} \nYou earned the title: {role.name}")
+        print("Successful execution")
     except (InvalidUser, APIException, RoleException) as e:
         await ctx.send(e.args[0])
 
