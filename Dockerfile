@@ -12,9 +12,6 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY . /app
 
-RUN python -m pip install -r requirements.txt
-
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
+RUN python -m pip install --root-user-action=ignore -r requirements.txt
 
 CMD ["python", "main.py"]
