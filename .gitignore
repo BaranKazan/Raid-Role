@@ -152,4 +152,4 @@ cython_debug/
 .idea/
 
 #Hiding my secret values
-/variables.env
+/.env
