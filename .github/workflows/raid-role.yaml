@@ -42,9 +42,6 @@ jobs:
       - name: Build Image
         run: docker build -t myregistryimages.azurecr.io/raid-role:latest .
       - name: Login in Azure Container Registry
-        run: |
-          docker login myregistryimages.azurecr.io
-          ${{ secrets.REGISTRY.USERNAME }}
-          ${{ secrets.REGISTRY.PASSSWORD }}
+        run: docker login myregistryimages.azurecr.io -u ${{ secrets.REGISTRY.USERNAME }} -p ${{ secrets.REGISTRY.PASSSWORD }}
       - name: Push Image
         run: docker push myregistryimages.azurecr.io/raid-role:latest
