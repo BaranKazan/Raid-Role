@@ -1,7 +1,7 @@
 import interactions
 import requests
 import urllib.parse
-from resources import *
+from resources import config, RoleException, InvalidUser, APIException
 
 bot = interactions.Client(token=config.DISCORD_TOKEN)
 role_names = [
