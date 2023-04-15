@@ -33,3 +33,18 @@ jobs:
           ruff --format=github --ignore=E501,F401,F403 --select=E9,F63,F7,F82 --target-version=py37 .
           # default set of ruff rules with GitHub Annotations
           ruff --format=github --ignore=E501,F401,F403 --target-version=py37 .
+
+  Deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Image
+        run: docker build -t myregistryimages.azurecr.io/raid-role:latest .
+      - name: Login in Azure Container Registry
+        run: |
+          docker login myregistryimages.azurecr.io
+          ${{ secrets.REGISTRY.USERNAME }}
+          ${{ secrets.REGISTRY.PASSSWORD }}
+      - name: Push Image
+        run: docker push myregistryimages.azurecr.io/raid-role:latest
